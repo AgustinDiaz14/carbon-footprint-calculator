@@ -22,11 +22,11 @@ function switchTab(category) {
     
     // Update tab styles
     document.querySelectorAll('[id$="Tab"]').forEach(tab => {
-        tab.classList.remove('bg-blue-600', 'text-white');
-        tab.classList.add('text-gray-600');
+        tab.classList.remove('bg-green-600', 'text-white');
+        tab.classList.add('text-gray-600', 'dark:text-gray-300');
     });
-    document.getElementById(category + 'Tab').classList.add('bg-blue-600', 'text-white');
-    document.getElementById(category + 'Tab').classList.remove('text-gray-600');
+    document.getElementById(category + 'Tab').classList.add('bg-green-600', 'text-white');
+    document.getElementById(category + 'Tab').classList.remove('text-gray-600', 'dark:text-gray-300');
     
     // Show/hide sections
     document.querySelectorAll('.category-section').forEach(section => {
@@ -35,6 +35,13 @@ function switchTab(category) {
     document.getElementById(category + 'Section').classList.remove('hidden');
     
     currentCategory = category;
+}
+
+function toggleTheme() {
+    document.documentElement.classList.toggle('dark');
+    const isDark = document.documentElement.classList.contains('dark');
+    document.getElementById('themeToggle').innerHTML = `<span class="text-2xl">${isDark ? '☀️' : '🌙'}</span>`;
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
 }
 
 function saveToHistory(category, value, result) {
@@ -60,15 +67,19 @@ function displayHistory() {
         historyDiv.innerHTML = '<p class="text-gray-500 text-sm">No calculations yet</p>';
         clearBtn.classList.add('hidden');
     } else {
-        historyDiv.innerHTML = history.map(entry => 
-            `<div class="text-sm p-2 bg-gray-50 rounded">
-                <div class="font-medium">${entry.category}: ${entry.result} kg CO2</div>
-                <div class="text-gray-500 text-xs">${entry.date}</div>
-            </div>`
-        ).join('');
+        historyDiv.innerHTML = history.map(entry => {
+            const icon = entry.category === 'car' ? '🚗' : entry.category === 'flight' ? '✈️' : '⚡';
+            return `<div class="text-sm p-2 bg-green-50 dark:bg-gray-700 rounded border border-green-100 dark:border-gray-600">
+                <div class="font-medium text-gray-800 dark:text-gray-200">${icon} ${entry.category}: ${entry.result} kg CO2</div>
+                <div class="text-gray-500 dark:text-gray-400 text-xs">${entry.date}</div>
+            </div>`;
+        }).join('');
         clearBtn.classList.remove('hidden');
     }
 }
+
+// Theme toggle
+document.getElementById('themeToggle').addEventListener('click', toggleTheme);
 
 // Tab event listeners
 document.getElementById('carTab').addEventListener('click', () => switchTab('car'));
@@ -116,6 +127,13 @@ document.getElementById('clearHistory').addEventListener('click', function() {
     localStorage.removeItem('carbonHistory');
     displayHistory();
 });
+
+// Initialize theme
+const savedTheme = localStorage.getItem('theme');
+if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+    document.documentElement.classList.add('dark');
+    document.getElementById('themeToggle').innerHTML = '<span class="text-2xl">☀️</span>';
+}
 
 // Initialize
 displayHistory();
